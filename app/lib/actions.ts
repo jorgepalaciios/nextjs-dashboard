@@ -13,6 +13,7 @@ import { AuthError } from 'next-auth'
 
 
 const FormSchema = z.object({
+  //this is for invoices only
   id: z.string(),
   customerId: z.string({
     invalid_type_error: 'Please select a customer.'
@@ -24,8 +25,17 @@ const FormSchema = z.object({
   date: z.string(),
 })
 
+const CustomerFormSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  email: z.string(),
+  image_url: z.string(),
+  date: z.string()
+
+})
 const CreateInvoice = FormSchema.omit({id: true, date: true})
 const UpdateInvoice = FormSchema.omit({ id: true, date: true})
+const CreateCustomer = CustomerFormSchema.omit({id: true, date: true})
 
 // This is temporary until @types/react-dom is updated
 export type State = {
@@ -36,6 +46,54 @@ export type State = {
   }
   message?: string | null
 }
+
+export type CustomerState = {
+  errors?: {
+    name?: string[],
+    email?: string[],
+    image_url?: string[],
+  }
+  message?: string | null
+}
+
+//CUSTOMERS
+
+export async function createCustomer(prevState: CustomerState, formData: FormData) {
+  const validateFields = CreateCustomer.safeParse({
+    name: formData.get('name'),
+    email: formData.get('email'),
+    image_url: formData.get('image_url')
+  })
+
+  if (!validateFields.success) {
+    return {
+      errors: validateFields.error.flatten().fieldErrors,
+      message: 'Missing Fields, failed to create customer'
+    }
+  }
+
+  const {name, email, image_url} = validateFields.data
+  const date = new Date().toISOString().split('T')[0]
+
+  try {
+    await sql`
+      INSERT INTO customers {name, email, image_url, date}
+      VALUES (${name}, ${email}, ${image_url}, ${date})
+    `
+  }
+  
+  catch (error) {
+    return {
+      message: 'Database Error: Failed to create customers'
+      }
+  }
+
+    // Revalidate the cache for the invoices page and redirect the user.
+    revalidatePath('/dashboard/customers')
+    redirect('/dashboard/customers')    
+
+}
+
 
 export async function createInvoice(prevState: State, formData: FormData) {
   //parse was change to safeParse in order to validate data on the server side {customerId, amount, status}, now is validated using Zod
@@ -82,10 +140,10 @@ export async function updateInvoice( id: string, prevState: State, formData: For
     status: formData.get('status'),
   })
 
-    //If form validation fails, return errors early. Otherwise continue.
-    if (!validateFields.success) {
-      return {
-        errors: validateFields.error.flatten().fieldErrors,
+  //If form validation fails, return errors early. Otherwise continue.
+  if (!validateFields.success) {
+    return {
+      errors: validateFields.error.flatten().fieldErrors,
         message: 'Missing Fields, Failed to update invoice.'
       }
     }
@@ -95,52 +153,53 @@ export async function updateInvoice( id: string, prevState: State, formData: For
 
   try {
     await sql `
-      UPDATE invoices
-      SET customer_id = ${customerId}, amount = ${amountInCents}, status = ${status}
-      WHERE id = ${id}
-      `
-    } catch (error) {
-      return {
-        message: 'Database Error: Failed to update invoice'
-      }
+    UPDATE invoices
+    SET customer_id = ${customerId}, amount = ${amountInCents}, status = ${status}
+    WHERE id = ${id}
+    `
+  } catch (error) {
+    return {
+      message: 'Database Error: Failed to update invoice'
     }
+  }
   // Revalidate the cache for the invoices page and redirect the user.
-    revalidatePath('/dashboard/invoices')
-    redirect('/dashboard/invoices')
-
+  revalidatePath('/dashboard/invoices')
+  redirect('/dashboard/invoices')
+  
 }
 
 export async function deleteInvoice(id: string) {
   // throw new Error('error')
   try {
     await sql `
-      DELETE FROM invoices WHERE id = ${id}
+    DELETE FROM invoices WHERE id = ${id}
     `
   } catch (error) {
     return {
       message: 'Database Error!: Failed to delete invoice'
     }}
-  // Revalidate the cache for the invoices page and redirect the user.
-  revalidatePath('/dashboard/invoices')
-}
-
-//Authentication
-
+    // Revalidate the cache for the invoices page and redirect the user.
+    revalidatePath('/dashboard/invoices')
+  }
+  
+  //Authentication
+  
 export async function authenticate(
   prevState: string | undefined,
   formData: FormData,
-) {
-  try {
+  ) {
+    try {
     await signIn('credentials', formData);
   } catch (error) {
     if (error instanceof AuthError) {
       switch (error.type) {
         case 'CredentialsSignin':
           return 'Invalid credentials.';
-        default:
-          return 'Something went wrong.';
+          default:
+            return 'Something went wrong.';
+          }
+        }
+        throw error;
       }
     }
-    throw error;
-  }
-}
+

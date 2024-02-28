@@ -6,6 +6,14 @@ import Breadcrumbs from '@/app/ui/invoices/breadcrumbs'
 //DATA
 import { fetchInvoiceById,fetchCustomers } from '@/app/lib/data'
 
+//Metadata
+import { Metadata } from 'next';
+
+export const metadata:Metadata = {
+  title: 'Edit Invoice',
+}
+
+
 export default async function Page({ params }: { params: { id: string}}) {
   const id = params.id
   const [invoice, customers] = await Promise.all([

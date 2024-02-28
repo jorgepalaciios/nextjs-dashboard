@@ -10,6 +10,14 @@ import { InvoicesTableSkeleton } from '@/app/ui/skeletons'
 // React
 import { Suspense } from 'react'
 
+//Metadata
+import { Metadata } from 'next';
+
+export const metadata:Metadata = {
+  title: 'Invoices',
+}
+
+
 export default async function Invoices ({
   searchParams,
 }: {
