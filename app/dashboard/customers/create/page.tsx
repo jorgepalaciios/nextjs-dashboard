@@ -3,7 +3,7 @@ import CustomerForm from '@/app/ui/customers/create-form'
 import Breadcrumbs from '@/app/ui/customers/breadcrumbs'
 
 //DATA
-import { fetchCustomers } from '@/app/lib/data'
+// import { fetchCustomersData } from '@/app/lib/data'
 
 //Metadata
 import { Metadata } from 'next'
@@ -13,15 +13,12 @@ export const metadata:Metadata = {
 }
 
 export default async function Page () {
-  // const customers = await fetchCustomers()
-
-  return (
+    return (
     <main>
-      <h1>Let&#39;s do it right</h1>
-            <Breadcrumbs 
+      <Breadcrumbs 
         breadcrumbs={[
           {
-            label: 'Invoices', href: '/dashboard/customers'},
+            label: 'Customers', href: '/dashboard/customers'},
           {
             label: 'Create Customer',
             href: '/dashboard/customers/create',
@@ -29,7 +26,7 @@ export default async function Page () {
           },
         ]}
       />
-      <CustomerForm customer={[]}  />
+      <CustomerForm  />
     </main>
   )
 }

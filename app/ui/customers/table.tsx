@@ -1,14 +1,16 @@
 import Image from 'next/image';
-
+import { DeleteCustomer, UpdateCustomer } from '@/app/ui/customers/buttons';
 
 import { fetchFilteredCustomers} from '@/app/lib/data'
 
 export default async function CustomersTable({
   query,
+  currentPage,
 }: {
   query: string;
+  currentPage: number;
 }) {
-  const customers = await fetchFilteredCustomers(query);
+  const customers = await fetchFilteredCustomers(query, currentPage);
 
   return (
       <div className="mt-6 flow-root">
@@ -53,7 +55,12 @@ export default async function CustomersTable({
                     <div className="pt-4 text-sm">
                       <p>{customer.total_invoices} invoices</p>
                     </div>
+                    <div className="flex justify-end gap-2">
+                      <UpdateCustomer id={customer.id} />
+                      <DeleteCustomer id={customer.id} />
+                    </div>
                   </div>
+                  
                 ))}
               </div>
               <table className="hidden min-w-full rounded-md text-gray-900 md:table">
@@ -66,7 +73,7 @@ export default async function CustomersTable({
                       Email
                     </th>
                     <th scope="col" className="px-3 py-5 font-medium">
-                      Total Invoices
+                      Total customers
                     </th>
                     <th scope="col" className="px-3 py-5 font-medium">
                       Total Pending
@@ -104,11 +111,19 @@ export default async function CustomersTable({
                       <td className="whitespace-nowrap bg-white px-4 py-5 text-sm group-first-of-type:rounded-md group-last-of-type:rounded-md">
                         {customer.total_paid}
                       </td>
+                      <td>
+                      <div className="flex justify-end gap-2">
+                      <UpdateCustomer id={customer.id} />
+                      <DeleteCustomer id={customer.id} />
+                    </div>
+                      </td>
                     </tr>
+                    
                   ))}
                 </tbody>
               </table>
             </div>
+
           </div>
         </div>
       </div>

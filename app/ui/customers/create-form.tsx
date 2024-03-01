@@ -8,21 +8,13 @@ import {
 import { Button } from '@/app/ui/button';
 import { createCustomer } from '@/app/lib/actions';
 
-export default function CustomerForm ({customer}: {customer: Customer[]}) {
-  const initialState = {message: null, errors: {} }
-  const [state, dispatch] = useFormState(createCustomer, initialState)
+export default function CustomerForm () {
 
   return (
-    <form action={dispatch}>
+    <form action={createCustomer}>
       <div className="rounded-md bg-gray-50 p-4 md:p-6">
         <div className="mb-4">
-          {/* <div id='customer-error' aria-live='polite' aria-atomic='true'>
-            {state.errors?.customerId &&
-              state.errors.customerId.map((error:string) => (
-                <p className='mt-2 text-sm text-red-500' key={error}>{error}</p>
-              ))
-            }
-          </div> */}
+
         </div>
 
         {/* Customer Name */}
@@ -42,17 +34,76 @@ export default function CustomerForm ({customer}: {customer: Customer[]}) {
                 // required
               />
             </div>
-            <div id='amount-error' aria-live='polite' aria-atomic='true'>
+            {/* <div id='amount-error' aria-live='polite' aria-atomic='true'>
             {state.errors?.name &&
               state.errors.name.map((error:string) => (
                 <p className='mt-2 text-sm text-red-500' key={error}>{error}</p>
               ))
             }
+          </div> */}
           </div>
+        </div>
+
+        {/* Customer Email */}
+        <div className="mb-4">
+          <label htmlFor="email" className="mb-2 block text-sm font-medium">
+            Type your email
+          </label>
+          <div className="relative mt-2 rounded-md">
+            <div className="relative">
+              <input
+                id="email"
+                name="email"
+                type="email"
+                placeholder="something@example.com"
+                className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+                aria-describedby='email-error'
+                required
+              />
+            </div>
+            {/* <div id='email-error' aria-live='polite' aria-atomic='true'>
+            {state.errors?.email &&
+              state.errors.email.map((error:string) => (
+                <p className='mt-2 text-sm text-red-500' key={error}>{error}</p>
+              ))
+            }
+          </div> */}
+          </div>
+        </div>
+
+        {/* Customer Image */}
+        <div className="mb-4">
+          <label htmlFor="image" className="mb-2 block text-sm font-medium">
+            load profile picture
+          </label>
+          <div className="relative mt-2 rounded-md">
+            <div className="relative">
+              <input
+                id="image_url"
+                name="image_url"
+                type="text"
+                placeholder="/example-image.png"
+                className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+                aria-describedby='email-error'
+                // required
+              />
+            </div>
+            {/* <div id='image-error' aria-live='polite' aria-atomic='true'>
+            {state.errors?.image_url &&
+              state.errors.image_url.map((error:string) => (
+                <p className='mt-2 text-sm text-red-500' key={error}>{error}</p>
+              ))
+            }
+          </div> */}
           </div>
         </div>
 
       </div>
+
+
+
+    {/* buttons */}
+
       <div className="mt-6 flex justify-end gap-4">
         <Link
           href="/dashboard/customers"

@@ -1,5 +1,6 @@
 import { sql } from '@vercel/postgres'
 import {
+  Customer,
   CustomerField,
   CustomersTableType,
   InvoiceForm,
@@ -149,24 +150,6 @@ export async function fetchInvoicesPages(query: string) {
   }
 }
 
-export async function fetchCustomersPages(query: string) {
-  noStore();
-  try {
-    const count = await sql`
-      SELECT COUNT(*)
-      FROM customers
-      WHERE
-        name ILIKE ${`%${query}%`} OR
-        email ILIKE ${`%${query}%`}
-    `;
-
-    const totalPages = Math.ceil(Number(count.rows[0].count) / ITEMS_PER_PAGE);
-    return totalPages;
-  } catch (error) {
-    console.error('Database Error:', error);
-    throw new Error('Failed to fetch total number of customers.');
-  }
-}
 
 
 export async function fetchInvoiceById(id: string) {
@@ -196,6 +179,27 @@ export async function fetchInvoiceById(id: string) {
   }
 }
 
+export async function fetchCustomersData() {
+  noStore()
+  try {
+    const data = await sql<Customer>`
+      SELECT
+        id,
+        name,
+        email,
+        image_url,
+      FROM customers
+      ORDER BY name ASC
+    `;
+
+    const customers = data.rows;
+    return customers;
+  } catch (err) {
+    console.error('Database Error:', err);
+    throw new Error('Failed to fetch all customers.');
+  }
+}
+
 export async function fetchCustomers() {
   noStore()
   try {
@@ -215,8 +219,14 @@ export async function fetchCustomers() {
   }
 }
 
-export async function fetchFilteredCustomers(query: string) {
+const CUSTOMERS_ITEMS_PER_PAGE = 6;
+export async function fetchFilteredCustomers(
+  query: string,
+  currentPage: number,
+  ) {
   noStore()
+  // const offset = (currentPage - 1) * CUSTOMERS_ITEMS_PER_PAGE;
+
   try {
     const data = await sql<CustomersTableType>`
 		SELECT
@@ -248,6 +258,26 @@ export async function fetchFilteredCustomers(query: string) {
     throw new Error('Failed to fetch customer table.');
   }
 }
+
+export async function fetchCustomersPages(query: string) {
+  noStore();
+  try {
+    const count = await sql`
+      SELECT COUNT(*)
+      FROM customers
+      WHERE
+        name ILIKE ${`%${query}%`} OR
+        email ILIKE ${`%${query}%`}
+    `;
+
+    const totalPages = Math.ceil(Number(count.rows[0].count) / CUSTOMERS_ITEMS_PER_PAGE);
+    return totalPages;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch total number of customers.');
+  }
+}
+
 
 export async function getUser(email: string) {
   noStore()

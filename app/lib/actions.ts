@@ -1,7 +1,7 @@
 'use server'
 
 //data validation
-import { z } from 'zod'
+import {  z } from 'zod'
 //query to db
 import { sql } from '@vercel/postgres'
 //clear chache and trigger a new request to server
@@ -10,6 +10,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { signIn } from '@/auth'
 import { AuthError } from 'next-auth'
+import { randomUUID } from 'crypto'
 
 
 const FormSchema = z.object({
@@ -25,17 +26,18 @@ const FormSchema = z.object({
   date: z.string(),
 })
 
+//for customers only
 const CustomerFormSchema = z.object({
   id: z.string(),
   name: z.string(),
-  email: z.string(),
+  email: z.string({
+    invalid_type_error: 'Invalid Email',
+  }),
   image_url: z.string(),
-  date: z.string()
-
 })
 const CreateInvoice = FormSchema.omit({id: true, date: true})
 const UpdateInvoice = FormSchema.omit({ id: true, date: true})
-const CreateCustomer = CustomerFormSchema.omit({id: true, date: true})
+const CreateCustomer = CustomerFormSchema.omit({id: true})
 
 // This is temporary until @types/react-dom is updated
 export type State = {
@@ -58,14 +60,20 @@ export type CustomerState = {
 
 //CUSTOMERS
 
-export async function createCustomer(prevState: CustomerState, formData: FormData) {
+
+export async function createCustomer(formData: FormData) {
   const validateFields = CreateCustomer.safeParse({
     name: formData.get('name'),
     email: formData.get('email'),
     image_url: formData.get('image_url')
-  })
 
+  });
+  
+
+
+  
   if (!validateFields.success) {
+
     return {
       errors: validateFields.error.flatten().fieldErrors,
       message: 'Missing Fields, failed to create customer'
@@ -73,13 +81,24 @@ export async function createCustomer(prevState: CustomerState, formData: FormDat
   }
 
   const {name, email, image_url} = validateFields.data
-  const date = new Date().toISOString().split('T')[0]
+  const id = randomUUID()
 
+  const customer = {
+    id: id,
+    name: name,
+    email: email,
+    image_url: image_url
+  }
+
+  console.log(customer)
+  
   try {
+    
     await sql`
-      INSERT INTO customers {name, email, image_url, date}
-      VALUES (${name}, ${email}, ${image_url}, ${date})
-    `
+    INSERT INTO customers (id, name, email, image_url)
+    VALUES (${customer.id}, ${customer.name}, ${customer.email}, ${customer.image_url})
+    ON CONFLICT (id) DO NOTHING;
+  `
   }
   
   catch (error) {
@@ -94,6 +113,21 @@ export async function createCustomer(prevState: CustomerState, formData: FormDat
 
 }
 
+export async function deleteCustomer(id: string) {
+  // throw new Error('error')
+  try {
+    await sql `
+    DELETE FROM customers WHERE id = ${id}
+    `
+  } catch (error) {
+    return {
+      message: 'Database Error!: Failed to delete customer'
+    }}
+    // Revalidate the cache for the customers page and redirect the user.
+    revalidatePath('/dashboard/customers')
+  }
+
+//INVOICES --->
 
 export async function createInvoice(prevState: State, formData: FormData) {
   //parse was change to safeParse in order to validate data on the server side {customerId, amount, status}, now is validated using Zod
