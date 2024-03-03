@@ -86,8 +86,6 @@ export async function createCustomer(formData: FormData) {
     email: email,
     image_url: image_url
   }
-
-  console.log(customer)
   
   try {
     
