@@ -69,9 +69,6 @@ export async function createCustomer(formData: FormData) {
 
   });
   
-
-
-  
   if (!validateFields.success) {
 
     return {
