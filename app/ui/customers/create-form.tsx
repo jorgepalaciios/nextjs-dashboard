@@ -6,7 +6,7 @@ import {
   UserCircleIcon,
 } from '@heroicons/react/24/outline';
 import { Button } from '@/app/ui/button';
-import { createCustomer } from '@/app/lib/actions';
+import { createCustomer } from '@/app/lib/customers/actions';
 
 export default function CustomerForm () {
 

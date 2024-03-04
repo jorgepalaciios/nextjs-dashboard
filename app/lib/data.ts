@@ -93,6 +93,7 @@ export async function fetchCardData() {
 }
 
 const ITEMS_PER_PAGE = 6;
+
 export async function fetchFilteredInvoices(
   query: string,
   currentPage: number,
@@ -220,12 +221,13 @@ export async function fetchCustomers() {
 }
 
 const CUSTOMERS_ITEMS_PER_PAGE = 6;
+
 export async function fetchFilteredCustomers(
   query: string,
   currentPage: number,
   ) {
   noStore()
-  // const offset = (currentPage - 1) * CUSTOMERS_ITEMS_PER_PAGE;
+  const offset = (currentPage - 1) * CUSTOMERS_ITEMS_PER_PAGE;
 
   try {
     const data = await sql<CustomersTableType>`
@@ -244,6 +246,7 @@ export async function fetchFilteredCustomers(
     customers.email ILIKE ${`%${query}%`}
 		GROUP BY customers.id, customers.name, customers.email, customers.image_url
 		ORDER BY customers.name ASC
+    LIMIT ${CUSTOMERS_ITEMS_PER_PAGE} OFFSET ${offset}
   `;
 
     const customers = data.rows.map((customer) => ({
